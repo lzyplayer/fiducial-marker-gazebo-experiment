@@ -27,11 +27,11 @@
             <trajectory id="0" type="stright_move" >
                <waypoint>
                   <time>0.0</time>
-                  <pose>5 1 1  0 0 0</pose>
+                  <pose>5 0 1  0 0 0</pose>
                </waypoint>
                <waypoint>
                   <time>25.0</time>
-                  <pose>50 1 1 0 0 0</pose>
+                  <pose>5 0 1 0 0 1.5707963</pose>
                </waypoint>
             </trajectory>
          </script>

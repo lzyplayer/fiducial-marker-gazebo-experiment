@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="apriltag_positioned">
+  <static>false</static>
+    <link name="link">
+      <visual name="visual">
+         <geometry>
+           <mesh>
+             <uri>model://tag_positioned/tag_positioned.dae</uri>
+           </mesh>
+         </geometry>
+        <material>
+        </material>
+       </visual>
+    </link>
+  </model>
+</sdf>
+

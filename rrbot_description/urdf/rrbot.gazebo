@@ -8,20 +8,6 @@
     <material>Gazebo/Orange</material>
   </gazebo>
 
-  <!-- Link2 -->
-  <gazebo reference="link2">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <material>Gazebo/Black</material>
-  </gazebo>
-
-  <!-- Link3 -->
-  <gazebo reference="link3">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <material>Gazebo/Orange</material>
-  </gazebo>
-
   <!-- camera_link -->
   <gazebo reference="camera_link">
     <mu1>0.2</mu1>
@@ -35,10 +21,10 @@
     <sensor type="camera" name="camera1">
       <update_rate>30.0</update_rate>
       <camera name="head">
-        <horizontal_fov>1.3962634</horizontal_fov>
+        <horizontal_fov>1.5707963</horizontal_fov>
         <image>
-          <width>800</width>
-          <height>800</height>
+          <width>1280</width>
+          <height>720</height>
           <format>R8G8B8</format>
         </image>
         <clip>
