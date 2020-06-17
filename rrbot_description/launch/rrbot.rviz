@@ -127,6 +127,7 @@ Visualization Manager:
       Visibility:
         "": true
         Grid: true
+        Image: true
         LaserScan: true
         RobotModel: true
         Value: true
@@ -142,6 +143,32 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Unreliable: false
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        camera_link:
+          Value: true
+        camera_link_optical:
+          Value: true
+        link1:
+          Value: true
+        world:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        world:
+          link1:
+            camera_link:
+              camera_link_optical:
+                {}
+      Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
@@ -171,16 +198,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.595978736877441
+      Distance: 10.037551879882812
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.3812426328659058
-        Y: 1.861308217048645
-        Z: 0.6898064613342285
+        X: -0.04810474067926407
+        Y: 0.9919023513793945
+        Z: -1.0387301445007324
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

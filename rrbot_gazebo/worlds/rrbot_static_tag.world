@@ -9,33 +9,27 @@
     <include>
       <uri>model://sun</uri>
     </include>
-	
-          <actor name="animated_tag">
-         <link name="link">
-            <visual name="visual">
-               <geometry>
-                  <mesh>
-                     <uri>model://tag_positioned/tag_positioned.dae</uri>
-                  </mesh>
-               </geometry>
-            </visual>
-         </link>
-         <script>
-            <loop>true</loop>
-            <delay_start>0.000000</delay_start>
-            <auto_start>true</auto_start>
-            <trajectory id="0" type="stright_move" >
-               <waypoint>
-                  <time>0.0</time>
-                  <pose>5 0 -0.4  0 0 0</pose>
-               </waypoint>
-               <waypoint>
-                  <time>25.0</time>
-                  <pose>5 0 -0.4 0 0 1.5707963 </pose>
-               </waypoint>
-            </trajectory>
-         </script>
-      </actor>
+
+
+   <model name='static_tag'>
+      <static>0</static>
+      <link name='link'>
+      <gravity>0</gravity>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://tag_positioned/tag_positioned.dae</uri>
+            </mesh>
+          </geometry>
+          <material/>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose frame=''>5 0 -0.4  0 0 0</pose>
+      <!-- 50 1 1 0 0 0 -->
+    </model>
 
    <model name='picture_wall'>
       <static>1</static>
