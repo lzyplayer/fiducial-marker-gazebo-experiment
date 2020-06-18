@@ -4,6 +4,8 @@
 
 #include "angle_utility/angle_gazebo_checker.h"
 
+#include "angle_utility/model_gazebo_setter.h"
+
 using namespace std;
 using namespace Eigen;
 namespace check_ns {
@@ -84,6 +86,8 @@ namespace check_ns {
                                     0, 0, 0, 1;
         double hz_duration = 1.0f / (double) initParam.gt_hz_;
         gt_pose_stack.set_capacity(5 * initParam.gt_hz_);
+        //        ModelStatus modelStatus()
+
         //
         model_getter_ = n_.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
         pose_suber = n_.subscribe(initParam.tag_detect_pose_topic_, 5, &GazeboSrvCaller::check_callback, this);
@@ -91,6 +95,7 @@ namespace check_ns {
     }
 
     void GazeboSrvCaller::gt_callback(const ros::TimerEvent &event) {
+
         gazebo_msgs::GetModelState getModelSrv;
         getModelSrv.request.model_name = initParam.model_name_;
         model_getter_.call(getModelSrv);
