@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "angle_utility/angle_calculate_utility.h"
-#include <gazebo_msgs/ModelStates.h>
+#include "model_gazebo_setter.h"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -35,6 +35,7 @@ namespace check_ns {
         const std::string source_frame_ = "world";
         const std::string model_name_ = "animated_tag";
         const std::string tag_detect_pose_topic_ = "/tag_detections/pose";
+        const std::string default_yaml_path_ = "/home/vickylzy/workspaceROS/Utility_ws/fiducial_marker_gazebo_ws/src/fiducial-marker-gazebo-experiment/angle_checker/data/movement.yaml";
         Eigen::Matrix4d camera_opti2world;
         Eigen::Matrix4d model2apriltag;
     };
@@ -91,7 +92,7 @@ namespace check_ns {
 
         ~GazeboSrvCaller() {}
         void init();
-        void check_callback(const geometry_msgs::PoseStampedConstPtr &ps_SCP);
+//        void check_callback(const geometry_msgs::PoseStampedConstPtr &ps_SCP);
         void gt_callback(const ros::TimerEvent& event);
 //        void image_timestamp_callback(const sensor_msgs::ImageConstPtr& im){
 //            ros::Duration duration = ros::Time::now() - im->header.stamp;
@@ -111,6 +112,7 @@ namespace check_ns {
         // communicator
         ros::Timer gt_timer;
         ros::Subscriber pose_suber;
+        std::unique_ptr<ModelStatusControler> modelstat_ptr;
         // param
 
         Init_param initParam;

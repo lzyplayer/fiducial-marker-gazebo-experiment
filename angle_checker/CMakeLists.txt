@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 project(angle_utility)
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}"-std=c++14")
-add_compile_options( -Wall )
+#add_compile_options( -Wall )
 
 find_package(OpenCV 3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
@@ -41,10 +41,12 @@ target_link_libraries(angle_checker
 
 add_executable(angle_gazebo_checker
         src/angle_gazebo_checker.cpp
+        src/model_gazebo_setter.cc
         )
 target_link_libraries(angle_gazebo_checker
         ${catkin_LIBRARIES}
         ${Boost_LIBRARIES}
+        ${OpenCV_LIBS}
         )
 #add_dependencies(angle_checker
 #        ${PROJECT_NAME}_generate_messages_cpp
@@ -54,14 +56,6 @@ add_executable(fake_info
         src/fake_camera_info.cc
         )
 target_link_libraries(fake_info
-        ${catkin_LIBRARIES}
-
-        )
-
-add_executable(model_setter
-        src/model_gazebo_setter.cc
-        )
-target_link_libraries(model_setter
         ${catkin_LIBRARIES}
 
         )

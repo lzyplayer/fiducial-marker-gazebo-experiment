@@ -17,7 +17,7 @@
 using namespace Eigen;
 
 inline Quaterniond rotm2quat(const Eigen::Matrix4d& rotm){
-    return Quaterniond(rotm.block(0,0,3,3));
+    return  Quaterniond (rotm.block<3,3>(0, 0));
 }
 
 inline double angleBetweenVectors(Eigen::Vector3d &a, Eigen::Vector3d &b) {

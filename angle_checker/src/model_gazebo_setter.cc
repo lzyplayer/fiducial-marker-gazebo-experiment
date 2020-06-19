@@ -14,7 +14,7 @@ namespace check_ns{
 
     using namespace Eigen;
 
-    void ModelStatus::init() {
+    void ModelStatusControler::init() {
         setter_ = n_.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
         getter_ = n_.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
         init_quat_ = rotm2quat(init_state_);
@@ -23,11 +23,12 @@ namespace check_ns{
 
     }
 
-    ModelStatus::ModelStatus(Eigen::Matrix4d initState, Eigen::Matrix4d finalState) : init_state_(std::move(
+    ModelStatusControler::ModelStatusControler(Eigen::Matrix4d initState, Eigen::Matrix4d finalState) : init_state_(std::move(
             initState)), final_state_(std::move(finalState)) {}
 
-    geometry_msgs::PoseStampedConstPtr ModelStatus::step() {
+    geometry_msgs::PoseStampedConstPtr ModelStatusControler::step() {
         Quaterniond curr_quat = init_quat_.slerp((double)(curr_count_ % steps_total_) * single_step_, final_quat_);
+        curr_quat.normalize();
         Vector3d curr_pos = init_state_.block(0,3,3,1) + (double)(curr_count_ % steps_total_) *translation_step_;
         //
         geometry_msgs::PoseStamped poseStamped;
@@ -47,12 +48,16 @@ namespace check_ns{
         if(setModelState_srv.response.success){
             poseStamped.header.frame_id="world";
             poseStamped.header.stamp = ros::Time::now();
+            geometry_msgs::PoseStampedConstPtr poseStampedConstPtr = boost::make_shared<geometry_msgs::PoseStamped>(poseStamped);
+            ++curr_count_;
+            return poseStampedConstPtr;
         }else{
             std::cerr<<"model_state set failed"<<std::endl;
             return nullptr;
         }
 
 //        return geometry_msgs::PoseStampedConstPtr();
+
     }
 
 //    ModelStatus::ModelStatus() = delete;

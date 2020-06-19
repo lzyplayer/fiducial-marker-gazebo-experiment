@@ -14,13 +14,13 @@
 
 
 namespace check_ns{
-    class ModelStatus{
+    class ModelStatusControler{
     public:
 
-        ModelStatus(Eigen::Matrix4d initState, Eigen::Matrix4d finalState);
+        ModelStatusControler(Eigen::Matrix4d initState, Eigen::Matrix4d finalState);
 
-        ModelStatus() = delete;
-        ~ModelStatus() = default;
+        ModelStatusControler() = delete;
+        ~ModelStatusControler() = default;
         void init();
 
         geometry_msgs::PoseStampedConstPtr step();
@@ -32,7 +32,7 @@ namespace check_ns{
         Eigen::Quaterniond final_quat_;
 
         long curr_count_ = 0;
-        double single_step_ = 1e-5; //0~1  1e5 motions
+        double single_step_ = 1e-2; //0~1  1e5 motions
         Eigen::Vector3d translation_step_;
         long steps_total_ = (long)(1.0f / single_step_);
 

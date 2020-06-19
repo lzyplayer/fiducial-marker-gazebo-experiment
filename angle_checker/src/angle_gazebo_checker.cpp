@@ -5,6 +5,11 @@
 #include "angle_utility/angle_gazebo_checker.h"
 
 #include "angle_utility/model_gazebo_setter.h"
+#include <opencv2/core.hpp>
+#include <opencv2/core/eigen.hpp>
+#include <memory>
+
+
 
 using namespace std;
 using namespace Eigen;
@@ -86,24 +91,52 @@ namespace check_ns {
                                     0, 0, 0, 1;
         double hz_duration = 1.0f / (double) initParam.gt_hz_;
         gt_pose_stack.set_capacity(5 * initParam.gt_hz_);
-        //        ModelStatus modelStatus()
+        cv::FileStorage fsetting(initParam.default_yaml_path_,cv::FileStorage::READ);
 
+        cv::Mat start_cvmat, final_cvmat;
+        Eigen::Matrix4d target_pose = Eigen::Matrix4d::Identity();
+        Eigen::Matrix4d start_pose = Eigen::Matrix4d::Identity();
+        fsetting["start_motion"] >> start_cvmat;
+        fsetting["target_motion"] >> final_cvmat;
+        cv::cv2eigen(start_cvmat,start_pose);
+        cv::cv2eigen(final_cvmat,target_pose);
+
+        modelstat_ptr = std::make_unique<ModelStatusControler>(start_pose, target_pose);
+        modelstat_ptr->init();
         //
         model_getter_ = n_.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
-        pose_suber = n_.subscribe(initParam.tag_detect_pose_topic_, 5, &GazeboSrvCaller::check_callback, this);
+//        pose_suber = n_.subscribe(initParam.tag_detect_pose_topic_, 5, &GazeboSrvCaller::check_callback, this);
         gt_timer = n_.createTimer(ros::Duration(hz_duration), &GazeboSrvCaller::gt_callback, this);
     }
 
     void GazeboSrvCaller::gt_callback(const ros::TimerEvent &event) {
 
-        gazebo_msgs::GetModelState getModelSrv;
-        getModelSrv.request.model_name = initParam.model_name_;
-        model_getter_.call(getModelSrv);
-        //stack gt
-        geometry_msgs::PoseStamped poseStamped;
-        poseStamped.header = getModelSrv.response.header;
-        poseStamped.pose = getModelSrv.response.pose;
-        gt_pose_stack.push_back(poseStamped);
+        geometry_msgs::PoseStampedConstPtr  curr_gt = modelstat_ptr->step();
+        geometry_msgs::PoseStampedPtr  curr_pose;
+        while (true){
+            geometry_msgs::PoseStampedConstPtr  get_pose = ros::topic::waitForMessage<geometry_msgs::PoseStamped>(initParam.tag_detect_pose_topic_,n_);
+            if(get_pose->header.stamp>curr_gt->header.stamp){
+                curr_pose.reset(new geometry_msgs::PoseStamped(*get_pose));
+                break;
+            }
+
+        }
+        Matrix4d groudT = geome2eigenM(curr_gt->pose);
+        Matrix4d sample = geome2eigenM(curr_pose->pose);
+        Matrix4d transformed_sample = initParam.camera_opti2world * sample*initParam.model2apriltag;
+//            std::cout<<groudT<<"\n\n"<<transformed_sample<<std::endl;
+        Vector3d r_err = calculate_err_R(groudT, transformed_sample);
+        Vector3d t_err = calculate_err_T(groudT, transformed_sample);
+        cout << "position_err:\nx: " << t_err[0] << "\ty: " << t_err[1] << "\tz: " << t_err[2] << "\norirition:\n"
+             << "dx: " << r_err[0] << "\tdy: " << r_err[1] << "\tdz: " << r_err[2] << endl;
+//        gazebo_msgs::GetModelState getModelSrv;
+//        getModelSrv.request.model_name = initParam.model_name_;
+//        model_getter_.call(getModelSrv);
+//        //stack gt
+//        geometry_msgs::PoseStamped poseStamped;
+//        poseStamped.header = getModelSrv.response.header;
+//        poseStamped.pose = getModelSrv.response.pose;
+//        gt_pose_stack.push_back(poseStamped);
 //        if (gt_pose_stack.size()==5*initParam.gt_hz_){
 //            for (auto iter=gt_pose_stack.begin();iter!=gt_pose_stack.end();++iter) {
 //                std::cout<<std::setprecision(15)<<iter->header.stamp.toSec()<<"\n";
@@ -112,29 +145,29 @@ namespace check_ns {
 //        std::cout<<std::endl;
     }
 
-    void GazeboSrvCaller::check_callback(const geometry_msgs::PoseStampedConstPtr &ps_SCP) {
-        geometry_msgs::PoseStamped curr_gt;
-        bool found_gt_flag = false;
-        for (auto iter = gt_pose_stack.rbegin(); iter != gt_pose_stack.rend(); iter++) {
-            ros::Duration duration = iter->header.stamp - ps_SCP->header.stamp;
-            if (duration.toSec() < 0) {
-                curr_gt = abs(duration.toSec()) < abs(((iter - 1)->header.stamp - ps_SCP->header.stamp).toSec()) ? *iter : *(iter - 1);
-                found_gt_flag = true;
-                break;
-            }
-        }
-        if (found_gt_flag) {
-            Matrix4d groudT = geome2eigenM(curr_gt.pose);
-            Matrix4d sample = geome2eigenM(ps_SCP->pose);
-            Matrix4d transformed_sample = initParam.camera_opti2world * sample*initParam.model2apriltag;
-//            std::cout<<groudT<<"\n\n"<<transformed_sample<<std::endl;
-            Vector3d r_err = calculate_err_R(groudT, transformed_sample);
-            Vector3d t_err = calculate_err_T(groudT, transformed_sample);
-            cout << "position_err:\nx: " << t_err[0] << "\ty: " << t_err[1] << "\tz: " << t_err[2] << "\norirition:\n"
-                 << "dx: " << r_err[0] << "\tdy: " << r_err[1] << "\tdz: " << r_err[2] << endl;
-
-        }
-    }
+//    void GazeboSrvCaller::check_callback(const geometry_msgs::PoseStampedConstPtr &ps_SCP) {
+//        geometry_msgs::PoseStamped curr_gt;
+//        bool found_gt_flag = false;
+//        for (auto iter = gt_pose_stack.rbegin(); iter != gt_pose_stack.rend(); iter++) {
+//            ros::Duration duration = iter->header.stamp - ps_SCP->header.stamp;
+//            if (duration.toSec() < 0) {
+//                curr_gt = abs(duration.toSec()) < abs(((iter - 1)->header.stamp - ps_SCP->header.stamp).toSec()) ? *iter : *(iter - 1);
+//                found_gt_flag = true;
+//                break;
+//            }
+//        }
+//        if (found_gt_flag) {
+//            Matrix4d groudT = geome2eigenM(curr_gt.pose);
+//            Matrix4d sample = geome2eigenM(ps_SCP->pose);
+//            Matrix4d transformed_sample = initParam.camera_opti2world * sample*initParam.model2apriltag;
+////            std::cout<<groudT<<"\n\n"<<transformed_sample<<std::endl;
+//            Vector3d r_err = calculate_err_R(groudT, transformed_sample);
+//            Vector3d t_err = calculate_err_T(groudT, transformed_sample);
+//            cout << "position_err:\nx: " << t_err[0] << "\ty: " << t_err[1] << "\tz: " << t_err[2] << "\norirition:\n"
+//                 << "dx: " << r_err[0] << "\tdy: " << r_err[1] << "\tdz: " << r_err[2] << endl;
+//
+//        }
+//    }
 }
 
 int main(int argc, char **argv) {
