@@ -104,7 +104,7 @@ namespace check_ns {
         modelstat_ptr = std::make_unique<ModelStatusControler>(start_pose, target_pose);
         modelstat_ptr->init();
         //
-        model_getter_ = n_.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
+//        model_getter_ = n_.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
 //        pose_suber = n_.subscribe(initParam.tag_detect_pose_topic_, 5, &GazeboSrvCaller::check_callback, this);
         gt_timer = n_.createTimer(ros::Duration(hz_duration), &GazeboSrvCaller::gt_callback, this);
     }
@@ -114,7 +114,11 @@ namespace check_ns {
         geometry_msgs::PoseStampedConstPtr  curr_gt = modelstat_ptr->step();
         geometry_msgs::PoseStampedPtr  curr_pose;
         while (true){
-            geometry_msgs::PoseStampedConstPtr  get_pose = ros::topic::waitForMessage<geometry_msgs::PoseStamped>(initParam.tag_detect_pose_topic_,n_);
+            geometry_msgs::PoseStampedConstPtr  get_pose = ros::topic::waitForMessage<geometry_msgs::PoseStamped>(initParam.tag_detect_pose_topic_,n_,ros::Duration(1));
+            if(!get_pose){
+                std::cout<<"timeout! cannot detect curr pose!"<<std::endl;
+                return;
+            }
             if(get_pose->header.stamp>curr_gt->header.stamp){
                 curr_pose.reset(new geometry_msgs::PoseStamped(*get_pose));
                 break;
@@ -127,8 +131,10 @@ namespace check_ns {
 //            std::cout<<groudT<<"\n\n"<<transformed_sample<<std::endl;
         Vector3d r_err = calculate_err_R(groudT, transformed_sample);
         Vector3d t_err = calculate_err_T(groudT, transformed_sample);
-        cout << "position_err:\nx: " << t_err[0] << "\ty: " << t_err[1] << "\tz: " << t_err[2] << "\norirition:\n"
-             << "dx: " << r_err[0] << "\tdy: " << r_err[1] << "\tdz: " << r_err[2] << endl;
+//        cout << "position_err:\nx: " << t_err[0] << "\ty: " << t_err[1] << "\tz: " << t_err[2] << "\norirition:\n"
+//             << "dx: " << r_err[0] << "\tdy: " << r_err[1] << "\tdz: " << r_err[2] << endl;
+        cout << sqrt(pow(curr_gt->pose.position.x,2)+pow(curr_gt->pose.position.y,2)+pow(curr_gt->pose.position.z,2))<<"\t" << t_err[0] << "\t " << t_err[1] << "\t" << t_err[2] <<
+             "\t" << r_err[0] << "\t" << r_err[1] << "\t" << r_err[2] << endl;
 //        gazebo_msgs::GetModelState getModelSrv;
 //        getModelSrv.request.model_name = initParam.model_name_;
 //        model_getter_.call(getModelSrv);
